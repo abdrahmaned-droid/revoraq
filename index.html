@@ -1,0 +1,2338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REVORAQ — Know Before You Sell.</title>
+<meta name="description" content="REVORAQ — Price smarter. Understand your margins. Make better business decisions. A free profit, target margin, break-even and what-if calculator that runs entirely in your browser.">
+<meta name="author" content="REVORAQ">
+<meta name="theme-color" content="#0F1B2B">
+<meta property="og:title" content="REVORAQ — Know Before You Sell.">
+<meta property="og:description" content="Price smarter. Understand your margins. Make better business decisions.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="REVORAQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="REVORAQ — Know Before You Sell.">
+<meta name="twitter:description" content="Free to use. Calculate profit, target price, break-even, and pricing scenarios. Nothing leaves your browser.">
+<meta name="robots" content="index, follow">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "REVORAQ",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "description": "Profit, target margin, break-even and what-if pricing calculators that run entirely in the browser.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+/* ============================================================
+   REVORAQ — single-file profit calculator
+   No frameworks, no libraries, no database. Runs in the browser.
+   ============================================================ */
+
+:root{
+  --ink:        #0F1B2B;
+  --ink-soft:   #3A4B63;
+  --ink-faint:  #7A8AA0;
+  --paper:      #E9EEF4;
+  --card:       #FFFFFF;
+  --line:       #CBD6E4;
+  --line-soft:  #E2E9F1;
+  --signal:     #F2B01E;
+  --gain:       #0B7A6B;
+  --loss:       #B3261E;
+  --band-loss:  #E6B4AF;
+  --band-thin:  #F3D89A;
+  --band-good:  #A8D5C8;
+  --band-strong:#5FB9A4;
+
+  --display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --r: 4px;
+  --pad: 22px;
+}
+
+*{ box-sizing:border-box; }
+
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+
+body{
+  margin:0;
+  background:
+    linear-gradient(180deg, #F3F6FA 0%, var(--paper) 240px, var(--paper) 100%);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.5;
+  min-height:100vh;
+}
+
+.wrap{
+  max-width:1080px;
+  margin:0 auto;
+  padding:28px 18px 64px;
+}
+
+/* ---------- Header ---------- */
+
+.deck{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  gap:18px;
+  padding-bottom:20px;
+  border-bottom:2px solid var(--ink);
+}
+
+.brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+
+.mark{
+  width:38px; height:38px;
+  flex:0 0 auto;
+  background:var(--ink);
+  border-radius:var(--r);
+  display:grid; place-items:center;
+}
+.mark svg{ display:block; }
+
+.brand-text h1{
+  font-family:var(--display);
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:0.06em;
+  margin:0;
+  line-height:1.05;
+}
+.brand-text p{
+  margin:4px 0 0;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+
+.promise{
+  margin:0 0 4px;
+  max-width:56ch;
+  font-size:16px;
+  line-height:1.55;
+  color:var(--ink-soft);
+}
+
+/* ---------- Hero ---------- */
+
+.hero{
+  background:var(--ink);
+  border:1.5px solid var(--ink);
+  border-radius:var(--r);
+  padding:46px 40px 42px;
+  margin:24px 0 0;
+  color:#fff;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  background:var(--signal);
+  color:var(--ink);
+  padding:5px 10px;
+  border-radius:2px;
+}
+.badge::before{
+  content:"";
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--ink);
+}
+
+.hero h2{
+  font-family:var(--display);
+  font-size:clamp(30px, 5.4vw, 46px);
+  font-weight:800;
+  letter-spacing:-0.025em;
+  line-height:1.04;
+  margin:20px 0 0;
+  max-width:17ch;
+}
+.hero .hero-sub{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--signal);
+  margin:16px 0 0;
+}
+.hero .lede{
+  font-size:17px;
+  line-height:1.6;
+  color:rgba(255,255,255,.78);
+  max-width:62ch;
+  margin:18px 0 0;
+}
+
+.hero-actions{ margin-top:28px; }
+
+.btn-hero{
+  display:inline-block;
+  text-decoration:none;
+  background:var(--signal);
+  color:var(--ink);
+  border:1.5px solid var(--signal);
+  border-radius:var(--r);
+  font-family:var(--display);
+  font-size:16px;
+  font-weight:700;
+  padding:14px 26px;
+  cursor:pointer;
+  transition:transform .08s ease, background .15s ease;
+}
+.btn-hero:hover{ background:#FFC33F; border-color:#FFC33F; }
+.btn-hero:active{ transform:translateY(1px); }
+
+.trust{
+  margin:14px 0 0;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.05em;
+  color:rgba(255,255,255,.55);
+}
+
+/* ---------- Benefit cards ---------- */
+
+.benefits{ margin:30px 0 34px; }
+
+.bgrid{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:16px;
+  margin-top:18px;
+}
+.bcard{
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-top:3px solid var(--signal);
+  border-radius:var(--r);
+  padding:20px;
+}
+.bcard .idx{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  color:var(--ink-faint);
+}
+.bcard h3{
+  font-family:var(--display);
+  font-size:16px;
+  font-weight:700;
+  margin:9px 0 8px;
+  line-height:1.2;
+}
+.bcard p{
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--ink-soft);
+}
+
+/* ---------- Calculator anchor ---------- */
+
+#calculators{ scroll-margin-top:16px; }
+#calculators:focus{ outline:none; }
+
+/* ---------- Beta / feedback ---------- */
+
+.beta{
+  margin:36px 0 0;
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-left:4px solid var(--signal);
+  border-radius:var(--r);
+  padding:22px 24px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.beta-text{ flex:1; min-width:230px; }
+.beta h3{
+  font-family:var(--display);
+  font-size:17px;
+  font-weight:700;
+  margin:0 0 6px;
+}
+.beta p{
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--ink-soft);
+}
+.btn-feedback{
+  display:inline-block;
+  text-decoration:none;
+  background:var(--ink);
+  color:#fff;
+  border:1.5px solid var(--ink);
+  border-radius:var(--r);
+  font-family:var(--display);
+  font-size:15px;
+  font-weight:700;
+  padding:12px 22px;
+  white-space:nowrap;
+  transition:background .15s ease;
+}
+.btn-feedback:hover{ background:#1B2D45; }
+
+/* ---------- Feedback form ---------- */
+
+.feedback{
+  margin:16px 0 0;
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-left:4px solid var(--signal);
+  border-radius:var(--r);
+  padding:26px;
+}
+.feedback[hidden]{ display:none; }
+
+.feedback h3{
+  font-family:var(--display);
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-0.01em;
+  margin:0 0 6px;
+}
+.feedback h3:focus{ outline:none; }
+.feedback .intro{
+  margin:0 0 22px;
+  font-size:14px;
+  color:var(--ink-soft);
+  max-width:60ch;
+}
+
+.fb-q{ margin-bottom:20px; }
+.fb-q > legend,
+.fb-q > label{
+  display:block;
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:8px;
+  padding:0;
+}
+.fb-q .small{
+  font-weight:400;
+  color:var(--ink-faint);
+  font-size:13px;
+}
+
+fieldset.fb-q{
+  border:none;
+  margin:0 0 20px;
+  padding:0;
+}
+
+/* Rating scale */
+.scale{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:8px;
+}
+.scale label{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  min-height:56px;
+  padding:8px 6px;
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  background:#FBFCFE;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.3;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:border-color .12s ease, background .12s ease, color .12s ease;
+}
+.scale label:hover{ border-color:var(--ink-faint); }
+.scale input{
+  position:absolute;
+  opacity:0;
+  width:1px; height:1px;
+  margin:0;
+}
+.scale input:checked + span{ color:var(--ink); font-weight:700; }
+.scale label:has(input:checked){
+  border-color:var(--ink);
+  background:var(--signal);
+  color:var(--ink);
+}
+.scale label:has(input:focus-visible){
+  outline:3px solid var(--signal);
+  outline-offset:2px;
+}
+
+.fb-q textarea{
+  width:100%;
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  background:#FBFCFE;
+  padding:11px 12px;
+  font-family:var(--body);
+  font-size:15px;
+  color:var(--ink);
+  line-height:1.5;
+  resize:vertical;
+  min-height:84px;
+  transition:border-color .12s ease, box-shadow .12s ease;
+}
+.fb-q input[type=email]{
+  width:100%;
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  background:#FBFCFE;
+  padding:11px 12px;
+  font-family:var(--body);
+  font-size:15px;
+  color:var(--ink);
+}
+.fb-q textarea:focus,
+.fb-q input[type=email]:focus{
+  outline:none;
+  border-color:var(--ink);
+  box-shadow:0 0 0 3px rgba(15,27,43,.10);
+}
+
+.fb-actions{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1.5px solid var(--line-soft);
+}
+.btn-submit{
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+}
+.btn-submit:hover{ background:#1B2D45; }
+.fb-privacy{
+  margin:12px 0 0;
+  font-size:12px;
+  line-height:1.5;
+  color:var(--ink-faint);
+}
+
+/* Netlify honeypot — must stay in the markup, hidden from people */
+.hp{
+  position:absolute;
+  width:1px; height:1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+}
+
+/* Post-submission confirmation (shown only after a real redirect back) */
+.fb-success{
+  margin:16px 0 0;
+  background:var(--ink);
+  border:1.5px solid var(--ink);
+  border-radius:var(--r);
+  padding:22px 24px;
+  color:#fff;
+}
+.fb-success[hidden]{ display:none; }
+.fb-success h3{
+  font-family:var(--display);
+  font-size:18px;
+  font-weight:800;
+  margin:0 0 6px;
+}
+.fb-success h3:focus{ outline:none; }
+.fb-success p{
+  margin:0;
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(255,255,255,.78);
+}
+
+.currency{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.currency label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.currency select{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--ink);
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  padding:7px 10px;
+  cursor:pointer;
+}
+
+/* ---------- Tabs ---------- */
+
+.tabs-viewport{ display:contents; }
+
+.tabs{
+  display:flex;
+  gap:0;
+  margin:0 0 22px;
+  border-bottom:1.5px solid var(--line);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{ display:none; }
+
+.tab{
+  appearance:none;
+  background:none;
+  border:none;
+  border-bottom:3px solid transparent;
+  margin-bottom:-1.5px;
+  padding:14px 18px;
+  font-family:var(--display);
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:0.01em;
+  color:var(--ink-faint);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:color .15s ease, border-color .15s ease;
+}
+.tab:hover{ color:var(--ink-soft); }
+.tab[aria-selected="true"]{
+  color:var(--ink);
+  border-bottom-color:var(--signal);
+}
+
+.panel[hidden]{ display:none; }
+
+/* ---------- Layout ---------- */
+
+.rig{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  align-items:start;
+}
+
+.card{
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  padding:var(--pad);
+}
+
+.card-title{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  margin:0 0 4px;
+}
+.card-note{
+  margin:0 0 18px;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+
+/* ---------- Fields ---------- */
+
+.field{ margin-bottom:15px; }
+
+.field label{
+  display:block;
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+.field .hint{
+  font-weight:400;
+  color:var(--ink-faint);
+  font-size:13px;
+}
+
+.input-wrap{
+  display:flex;
+  align-items:stretch;
+  border:1.5px solid var(--line);
+  border-radius:var(--r);
+  background:#FBFCFE;
+  overflow:hidden;
+  transition:border-color .12s ease, box-shadow .12s ease;
+}
+.input-wrap:focus-within{
+  border-color:var(--ink);
+  box-shadow:0 0 0 3px rgba(15,27,43,.10);
+}
+.input-wrap .affix{
+  display:grid;
+  place-items:center;
+  padding:0 11px;
+  background:#EFF3F8;
+  border-right:1.5px solid var(--line);
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--ink-faint);
+  min-width:38px;
+}
+.input-wrap .affix.suffix{
+  border-right:none;
+  border-left:1.5px solid var(--line);
+}
+.input-wrap input{
+  flex:1;
+  min-width:0;
+  border:none;
+  outline:none;
+  background:transparent;
+  padding:11px 12px;
+  font-family:var(--mono);
+  font-size:16px;
+  color:var(--ink);
+}
+.input-wrap input::-webkit-outer-spin-button,
+.input-wrap input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.input-wrap input[type=number]{ -moz-appearance:textfield; }
+
+.input-wrap.invalid{ border-color:var(--loss); background:#FDF6F5; }
+.input-wrap.invalid .affix{ background:#F8E7E5; border-color:var(--loss); }
+
+.field-error{
+  margin:6px 0 0;
+  font-size:13px;
+  color:var(--loss);
+  min-height:0;
+}
+.field-error:empty{ display:none; }
+
+.pair{ display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.pair .field{ margin-bottom:0; }
+.pair + .field{ margin-top:15px; }
+
+/* ---------- Buttons ---------- */
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1.5px solid var(--line-soft);
+}
+
+.btn{
+  appearance:none;
+  font-family:var(--display);
+  font-size:15px;
+  font-weight:700;
+  padding:12px 20px;
+  border-radius:var(--r);
+  cursor:pointer;
+  border:1.5px solid var(--ink);
+  transition:transform .08s ease, background .15s ease, color .15s ease;
+}
+.btn:active{ transform:translateY(1px); }
+
+.btn-go{
+  flex:1;
+  background:var(--ink);
+  color:#fff;
+}
+.btn-go:hover{ background:#1B2D45; }
+
+.btn-reset{
+  background:transparent;
+  color:var(--ink);
+  border-color:var(--line);
+}
+.btn-reset:hover{ border-color:var(--ink); }
+
+:focus-visible{
+  outline:3px solid var(--signal);
+  outline-offset:2px;
+}
+
+/* ---------- Readout ---------- */
+
+.readout{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:#fff;
+  position:sticky;
+  top:20px;
+}
+.readout .card-title{ color:rgba(255,255,255,.55); }
+
+.headline{
+  margin:14px 0 0;
+  padding-bottom:20px;
+  border-bottom:1px solid rgba(255,255,255,.16);
+}
+.headline .label{
+  font-size:13px;
+  color:rgba(255,255,255,.62);
+  margin:0 0 6px;
+}
+.headline .value{
+  font-family:var(--mono);
+  font-size:clamp(30px, 7vw, 42px);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  line-height:1;
+  word-break:break-all;
+}
+.value.is-gain{ color:#67D8BE; }
+.value.is-loss{ color:#FF9E92; }
+.value.is-idle{ color:rgba(255,255,255,.35); }
+
+.stats{
+  list-style:none;
+  margin:0;
+  padding:18px 0 0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px 14px;
+}
+.stats li{ min-width:0; }
+.stats .label{
+  font-size:12px;
+  color:rgba(255,255,255,.6);
+  margin:0 0 4px;
+  line-height:1.3;
+}
+.stats .num{
+  font-family:var(--mono);
+  font-size:19px;
+  font-weight:500;
+  word-break:break-all;
+}
+.stats .num.idle{ color:rgba(255,255,255,.35); }
+
+/* Signature: the margin band */
+.band-block{ margin-top:22px; }
+.band-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-size:12px;
+  color:rgba(255,255,255,.6);
+  margin-bottom:8px;
+}
+.band{
+  position:relative;
+  height:12px;
+  border-radius:2px;
+  display:flex;
+  overflow:hidden;
+}
+.band span{ flex:1; }
+.band .s1{ background:var(--band-loss); }
+.band .s2{ background:var(--band-thin); }
+.band .s3{ background:var(--band-good); }
+.band .s4{ background:var(--band-strong); }
+.band.idle{ opacity:.28; }
+
+.needle{
+  position:absolute;
+  top:-5px;
+  left:0;
+  width:3px;
+  height:22px;
+  background:#fff;
+  border-radius:2px;
+  box-shadow:0 0 0 1.5px var(--ink);
+  transform:translateX(-1.5px);
+  transition:left .35s cubic-bezier(.22,.8,.3,1);
+}
+.needle[hidden]{ display:none; }
+
+.band-scale{
+  display:flex;
+  margin-top:7px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.5);
+}
+.band-scale span{ flex:1; text-align:center; }
+
+.band-note{
+  margin:10px 0 0;
+  font-size:12px;
+  line-height:1.45;
+  color:rgba(255,255,255,.55);
+}
+
+/* Scenario groups (what-if simulator) */
+.group{ margin-bottom:22px; }
+.group:last-of-type{ margin-bottom:0; }
+.group-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 14px;
+}
+.group-head .chip{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:4px 8px;
+  border-radius:2px;
+  background:#EFF3F8;
+  color:var(--ink-soft);
+  border:1.5px solid var(--line);
+}
+.group-head .chip.proposed{
+  background:var(--signal);
+  border-color:var(--signal);
+  color:var(--ink);
+}
+.group-head h3{
+  margin:0;
+  font-family:var(--display);
+  font-size:15px;
+  font-weight:700;
+}
+.group-head .sub{
+  margin-left:auto;
+  font-size:12px;
+  color:var(--ink-faint);
+}
+
+/* Side-by-side comparison (what-if simulator) */
+.compare{ margin-top:14px; }
+.crow{
+  display:grid;
+  grid-template-columns:1.25fr 1fr 1fr;
+  gap:10px;
+  align-items:baseline;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.crow:last-child{ border-bottom:none; }
+.crow .metric{
+  font-size:13px;
+  color:rgba(255,255,255,.72);
+  line-height:1.3;
+}
+.crow .cell{
+  font-family:var(--mono);
+  font-size:16px;
+  text-align:right;
+  word-break:break-all;
+}
+.crow .cell.idle{ color:rgba(255,255,255,.35); }
+.crow .cell.proposed{ color:var(--signal); }
+.chead{
+  border-bottom:1.5px solid rgba(255,255,255,.28);
+  padding-bottom:8px;
+}
+.chead span{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.6);
+}
+.chead .cell{ text-align:right; font-size:10px; }
+
+.delta-block{ margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,.16); }
+.deltas{
+  list-style:none;
+  margin:12px 0 0;
+  padding:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.deltas li{ min-width:0; }
+.deltas .label{
+  font-size:12px;
+  color:rgba(255,255,255,.6);
+  margin:0 0 4px;
+  line-height:1.3;
+}
+.deltas .num{
+  font-family:var(--mono);
+  font-size:17px;
+  word-break:break-all;
+}
+.deltas .num.idle{ color:rgba(255,255,255,.35); }
+.deltas .num.up{ color:#67D8BE; }
+.deltas .num.down{ color:#FF9E92; }
+.deltas .foot-note{
+  font-size:11px;
+  color:rgba(255,255,255,.5);
+  margin:3px 0 0;
+  line-height:1.35;
+}
+
+.disclaimer{
+  margin:18px 0 0;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.16);
+  font-size:12px;
+  line-height:1.5;
+  color:rgba(255,255,255,.55);
+}
+
+/* Price composition bar (target calculator) */
+.stack-block{ margin-top:22px; }
+.stack{
+  display:flex;
+  height:34px;
+  border-radius:2px;
+  overflow:hidden;
+  background:rgba(255,255,255,.12);
+}
+.stack .seg{
+  display:grid;
+  place-items:center;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;
+  transition:width .35s cubic-bezier(.22,.8,.3,1);
+}
+.stack .seg-cost{ background:rgba(255,255,255,.24); color:#fff; }
+.stack .seg-profit{ background:var(--signal); color:var(--ink); font-weight:700; }
+.stack.idle .seg{ width:50%; opacity:.35; }
+
+.verdict{
+  margin:20px 0 0;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.16);
+  font-size:14px;
+  line-height:1.5;
+  color:rgba(255,255,255,.82);
+}
+.verdict strong{ color:#fff; }
+.verdict.warn{ color:#FFD08A; }
+
+/* ---------- Footer ---------- */
+
+.foot{
+  margin-top:34px;
+  padding-top:18px;
+  border-top:1.5px solid var(--line);
+  font-size:13px;
+  color:var(--ink-faint);
+  line-height:1.6;
+}
+.foot strong{ color:var(--ink-soft); }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width:820px){
+  .rig{ grid-template-columns:1fr; }
+  .readout{ position:static; }
+  .wrap{ padding:20px 14px 48px; }
+  .currency{ margin-left:0; width:100%; }
+  .tabs-viewport{
+    display:grid;
+    grid-template-columns:14px minmax(0, 1fr) 14px;
+    margin:0 0 22px;
+    border-bottom:1.5px solid var(--line);
+  }
+  .tabs-viewport::before,
+  .tabs-viewport::after{
+    content:"";
+    align-self:stretch;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .15s ease;
+  }
+  .tabs-viewport::before{
+    background:linear-gradient(to right, rgba(15,27,43,.10), rgba(15,27,43,0));
+  }
+  .tabs-viewport::after{
+    background:linear-gradient(to left, rgba(15,27,43,.10), rgba(15,27,43,0));
+  }
+  .tabs-viewport.has-left-cue::before,
+  .tabs-viewport.has-right-cue::after{ opacity:1; }
+  .tabs{
+    min-width:0;
+    max-width:100%;
+    margin-bottom:0;
+    border-bottom:0;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .tab{ padding:13px 14px; font-size:13px; }
+  .brand-text h1{ font-size:22px; }
+  .promise{ font-size:15px; margin:0 0 4px; }
+  .hero{ padding:32px 22px 30px; margin-top:20px; }
+  .hero .lede{ font-size:16px; }
+  .hero h2{ max-width:none; }
+  .btn-hero{ display:block; text-align:center; width:100%; }
+  .bgrid{ grid-template-columns:repeat(2, 1fr); }
+  .benefits{ margin:26px 0 28px; }
+  .beta{ padding:20px; }
+  .btn-feedback{ width:100%; text-align:center; }
+  .feedback{ padding:22px 18px; }
+  .scale{ grid-template-columns:repeat(5, 1fr); gap:6px; }
+  .scale label{ font-size:11px; min-height:62px; padding:8px 3px; }
+  .btn-submit{ width:100%; }
+}
+
+@media (max-width:420px){
+  .pair{ grid-template-columns:1fr; }
+  .pair .field + .field{ margin-top:15px; }
+  .actions{ flex-direction:column-reverse; }
+  .btn{ width:100%; }
+  .stats{ grid-template-columns:1fr; }
+  .deltas{ grid-template-columns:1fr; }
+  .crow{ grid-template-columns:1fr; gap:4px; padding:12px 0; }
+  .crow .cell{ text-align:left; }
+  .crow .cell::before{
+    content:attr(data-col) " ";
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.5);
+  }
+  .chead{ display:none; }
+  .group-head .sub{ display:none; }
+  .bgrid{ grid-template-columns:1fr; }
+  .hero h2{ font-size:28px; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{ transition:none !important; animation:none !important; }
+  html{ scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="deck">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M2 15.5 L20 3.5 L13.5 19 L11 13 L2 15.5 Z" fill="#F2B01E"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>REVORAQ</h1>
+        <p>Know Before You Sell.</p>
+      </div>
+    </div>
+
+    <div class="currency">
+      <label for="cur">Currency</label>
+      <select id="cur">
+        <option value="$" selected>$ &nbsp;USD</option>
+        <option value="€">€ &nbsp;EUR</option>
+        <option value="£">£ &nbsp;GBP</option>
+        <option value="¥">¥ &nbsp;JPY</option>
+        <option value="C$">C$ CAD</option>
+        <option value="A$">A$ AUD</option>
+        <option value="₦">₦ &nbsp;NGN</option>
+        <option value="R">R &nbsp;ZAR</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- ============ HERO / FREE ACCESS ============ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <span class="badge">Free - No Signup</span>
+    <h2 id="hero-title">Stop Guessing What to Charge.</h2>
+    <p class="hero-sub">Know your numbers before you sell.</p>
+    <p class="lede">REVORAQ helps entrepreneurs calculate profit, set target prices, understand break-even points, and test pricing decisions before putting them into the market.</p>
+    <div class="hero-actions">
+      <a class="btn-hero" href="#calculators">Start Calculating Free</a>
+      <p class="trust">No signup • No credit card • Your numbers stay in your browser</p>
+    </div>
+  </section>
+
+  <!-- ============ BENEFIT CARDS ============ -->
+  <section class="benefits" aria-label="What REVORAQ does">
+    <p class="promise">Price smarter. Understand your margins. Make better business decisions.</p>
+    <div class="bgrid">
+
+      <article class="bcard">
+        <span class="idx">01</span>
+        <h3>Know Your Profit</h3>
+        <p>See what remains after product, labor, advertising, transaction, and other entered costs.</p>
+      </article>
+
+      <article class="bcard">
+        <span class="idx">02</span>
+        <h3>Set the Right Price</h3>
+        <p>Enter your desired profit margin and see the selling price required to reach it.</p>
+      </article>
+
+      <article class="bcard">
+        <span class="idx">03</span>
+        <h3>Find Your Break-Even Point</h3>
+        <p>See approximately how many units you need to sell to cover your fixed expenses.</p>
+      </article>
+
+      <article class="bcard">
+        <span class="idx">04</span>
+        <h3>Test Before You Change</h3>
+        <p>Compare your current and proposed pricing scenarios before making changes in the real world.</p>
+      </article>
+
+      <article class="bcard">
+        <span class="idx">05</span>
+        <h3>Plan Your Profit Goal</h3>
+        <p>Turn a monthly profit target into the sales and revenue needed to reach it.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ CALCULATORS ============ -->
+  <section id="calculators" tabindex="-1" aria-label="Calculators">
+
+  <div class="tabs-viewport">
+    <nav class="tabs" role="tablist" aria-label="Choose a calculator">
+      <button class="tab" role="tab" id="tab-profit"    aria-controls="panel-profit"    aria-selected="true">Profit per sale</button>
+      <button class="tab" role="tab" id="tab-target"    aria-controls="panel-target"    aria-selected="false" tabindex="-1">Price for a target margin</button>
+      <button class="tab" role="tab" id="tab-breakeven" aria-controls="panel-breakeven" aria-selected="false" tabindex="-1">Break-even</button>
+      <button class="tab" role="tab" id="tab-whatif"    aria-controls="panel-whatif"    aria-selected="false" tabindex="-1">What-if simulator</button>
+      <button class="tab" role="tab" id="tab-goal"      aria-controls="panel-goal"      aria-selected="false" tabindex="-1">Monthly profit goal</button>
+    </nav>
+  </div>
+
+  <!-- ============ 1. PROFIT ============ -->
+  <section class="panel" id="panel-profit" role="tabpanel" aria-labelledby="tab-profit">
+    <div class="rig">
+
+      <div class="card">
+        <p class="card-title">Your numbers</p>
+        <p class="card-note">Enter what you charge and everything it costs you to deliver one sale. Leave a box blank if it doesn't apply.</p>
+
+        <div class="field">
+          <label for="p-price">Selling price <span class="hint">— what one customer pays</span></label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-price" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="p-price-err" role="alert"></p>
+        </div>
+
+        <div class="pair">
+          <div class="field">
+            <label for="p-product">Product or material cost</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-product" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+            <p class="field-error" id="p-product-err" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="p-labor">Labor cost</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-labor" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+            <p class="field-error" id="p-labor-err" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="pair" style="margin-top:15px">
+          <div class="field">
+            <label for="p-ads">Advertising cost</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-ads" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+            <p class="field-error" id="p-ads-err" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="p-fees">Platform or transaction fees</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-fees" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+            <p class="field-error" id="p-fees-err" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:15px">
+          <label for="p-other">Other costs <span class="hint">— shipping, software, packaging</span></label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="p-other" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="p-other-err" role="alert"></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-reset" type="button" data-reset="profit">Reset</button>
+          <button class="btn btn-go" type="button" data-calc="profit">Calculate profit</button>
+        </div>
+      </div>
+
+      <div class="card readout">
+        <p class="card-title">Result</p>
+        <div class="headline">
+          <p class="label">Profit per sale</p>
+          <div class="value is-idle" id="p-out-profit">—</div>
+        </div>
+
+        <ul class="stats">
+          <li><p class="label">Total cost per sale</p><div class="num idle" id="p-out-cost">—</div></li>
+          <li><p class="label">Profit margin</p><div class="num idle" id="p-out-margin">—</div></li>
+          <li><p class="label">Markup on cost</p><div class="num idle" id="p-out-markup">—</div></li>
+          <li><p class="label">Costs as % of price</p><div class="num idle" id="p-out-costpct">—</div></li>
+        </ul>
+
+        <div class="band-block">
+          <div class="band-head">
+            <span>Margin health</span>
+            <span id="p-band-label">Awaiting numbers</span>
+          </div>
+          <div class="band idle" id="p-band">
+            <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span>
+            <i class="needle" id="p-needle" hidden></i>
+          </div>
+          <div class="band-scale"><span>Loss</span><span>Under 20%</span><span>20–40%</span><span>40%+</span></div>
+          <p class="band-note">These ranges are reference points only. What counts as a workable margin varies widely by industry and business model.</p>
+        </div>
+
+        <p class="verdict" id="p-verdict">Fill in the boxes on the left, then press <strong>Calculate profit</strong>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 2. TARGET ============ -->
+  <section class="panel" id="panel-target" role="tabpanel" aria-labelledby="tab-target" hidden>
+    <div class="rig">
+
+      <div class="card">
+        <p class="card-title">Your numbers</p>
+        <p class="card-note">Start from what a sale costs you and the margin you want to keep. REVORAQ works backwards to the price.</p>
+
+        <div class="field">
+          <label for="t-cost">Total cost per sale <span class="hint">— everything it takes to deliver one</span></label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="t-cost" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="t-cost-err" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="t-margin">Desired profit margin <span class="hint">— must be under 100%</span></label>
+          <div class="input-wrap"><input type="number" id="t-margin" min="0" max="99.99" step="0.1" placeholder="40" inputmode="decimal"><span class="affix suffix">%</span></div>
+          <p class="field-error" id="t-margin-err" role="alert"></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-reset" type="button" data-reset="target">Reset</button>
+          <button class="btn btn-go" type="button" data-calc="target">Calculate price</button>
+        </div>
+      </div>
+
+      <div class="card readout">
+        <p class="card-title">Result</p>
+        <div class="headline">
+          <p class="label">Recommended selling price</p>
+          <div class="value is-idle" id="t-out-price">—</div>
+        </div>
+
+        <ul class="stats">
+          <li><p class="label">Expected profit per sale</p><div class="num idle" id="t-out-profit">—</div></li>
+          <li><p class="label">Markup on cost</p><div class="num idle" id="t-out-markup">—</div></li>
+        </ul>
+
+        <div class="stack-block">
+          <div class="band-head">
+            <span>What the price is made of</span>
+            <span id="t-stack-label">Awaiting numbers</span>
+          </div>
+          <div class="stack idle" id="t-stack">
+            <div class="seg seg-cost" id="t-seg-cost">Cost</div>
+            <div class="seg seg-profit" id="t-seg-profit">Profit</div>
+          </div>
+        </div>
+
+        <p class="verdict" id="t-verdict">Enter your cost and the margin you want, then press <strong>Calculate price</strong>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 3. BREAK-EVEN ============ -->
+  <section class="panel" id="panel-breakeven" role="tabpanel" aria-labelledby="tab-breakeven" hidden>
+    <div class="rig">
+
+      <div class="card">
+        <p class="card-title">Your numbers</p>
+        <p class="card-note">Fixed expenses stay the same whether you sell 1 or 1,000. Variable costs happen once per unit sold.</p>
+
+        <div class="field">
+          <label for="b-fixed">Monthly fixed expenses <span class="hint">— rent, software, insurance</span></label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="b-fixed" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="b-fixed-err" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="b-price">Selling price per unit</label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="b-price" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="b-price-err" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="b-var">Variable cost per unit</label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="b-var" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+          <p class="field-error" id="b-var-err" role="alert"></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-reset" type="button" data-reset="breakeven">Reset</button>
+          <button class="btn btn-go" type="button" data-calc="breakeven">Calculate break-even</button>
+        </div>
+      </div>
+
+      <div class="card readout">
+        <p class="card-title">Result</p>
+        <div class="headline">
+          <p class="label">Units to sell each month before you profit</p>
+          <div class="value is-idle" id="b-out-units">—</div>
+        </div>
+
+        <ul class="stats">
+          <li><p class="label">Contribution margin per unit</p><div class="num idle" id="b-out-cm">—</div></li>
+          <li><p class="label">Contribution margin ratio</p><div class="num idle" id="b-out-cmr">—</div></li>
+          <li><p class="label">Break-even revenue</p><div class="num idle" id="b-out-rev">—</div></li>
+          <li><p class="label">Roughly per week</p><div class="num idle" id="b-out-week">—</div></li>
+        </ul>
+
+        <p class="verdict" id="b-verdict">Enter your three numbers, then press <strong>Calculate break-even</strong>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 4. WHAT-IF SIMULATOR ============ -->
+  <section class="panel" id="panel-whatif" role="tabpanel" aria-labelledby="tab-whatif" hidden>
+    <div class="rig">
+
+      <div class="card">
+        <p class="card-title">Two scenarios</p>
+        <p class="card-note">Enter how things work today, then the version you're considering. Raising a price usually moves sales volume — put your honest estimate in the proposed volume box.</p>
+
+        <div class="group">
+          <div class="group-head">
+            <span class="chip">Now</span>
+            <h3>Current scenario</h3>
+          </div>
+
+          <div class="pair">
+            <div class="field">
+              <label for="w-cprice">Current selling price</label>
+              <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="w-cprice" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+              <p class="field-error" id="w-cprice-err" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="w-ccost">Current cost per sale</label>
+              <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="w-ccost" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+              <p class="field-error" id="w-ccost-err" role="alert"></p>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:15px">
+            <label for="w-cvol">Current monthly sales volume <span class="hint">— units per month</span></label>
+            <div class="input-wrap"><input type="number" id="w-cvol" min="0" step="1" placeholder="0" inputmode="numeric"><span class="affix suffix">units</span></div>
+            <p class="field-error" id="w-cvol-err" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-head">
+            <span class="chip proposed">Proposed</span>
+            <h3>Proposed scenario</h3>
+          </div>
+
+          <div class="pair">
+            <div class="field">
+              <label for="w-pprice">Proposed selling price</label>
+              <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="w-pprice" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+              <p class="field-error" id="w-pprice-err" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="w-pcost">Proposed cost per sale</label>
+              <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="w-pcost" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+              <p class="field-error" id="w-pcost-err" role="alert"></p>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:15px">
+            <label for="w-pvol">Expected monthly sales volume <span class="hint">— your estimate at the new price</span></label>
+            <div class="input-wrap"><input type="number" id="w-pvol" min="0" step="1" placeholder="0" inputmode="numeric"><span class="affix suffix">units</span></div>
+            <p class="field-error" id="w-pvol-err" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-reset" type="button" data-reset="whatif">Reset simulator</button>
+          <button class="btn btn-go" type="button" data-calc="whatif">Compare scenarios</button>
+        </div>
+      </div>
+
+      <div class="card readout">
+        <p class="card-title">Side by side</p>
+
+        <div class="compare">
+          <div class="crow chead">
+            <span class="metric">Metric</span>
+            <span class="cell">Current</span>
+            <span class="cell">Proposed</span>
+          </div>
+          <div class="crow">
+            <span class="metric">Profit per sale</span>
+            <span class="cell idle" data-col="Current"  id="w-c-pps">—</span>
+            <span class="cell idle" data-col="Proposed" id="w-p-pps">—</span>
+          </div>
+          <div class="crow">
+            <span class="metric">Profit margin</span>
+            <span class="cell idle" data-col="Current"  id="w-c-margin">—</span>
+            <span class="cell idle" data-col="Proposed" id="w-p-margin">—</span>
+          </div>
+          <div class="crow">
+            <span class="metric">Monthly revenue</span>
+            <span class="cell idle" data-col="Current"  id="w-c-rev">—</span>
+            <span class="cell idle" data-col="Proposed" id="w-p-rev">—</span>
+          </div>
+          <div class="crow">
+            <span class="metric">Monthly product-level profit</span>
+            <span class="cell idle" data-col="Current"  id="w-c-profit">—</span>
+            <span class="cell idle" data-col="Proposed" id="w-p-profit">—</span>
+          </div>
+        </div>
+
+        <div class="delta-block">
+          <p class="card-title">What changes</p>
+          <ul class="deltas">
+            <li>
+              <p class="label">Selling price</p>
+              <div class="num idle" id="w-d-price">—</div>
+              <p class="foot-note" id="w-d-price-note"></p>
+            </li>
+            <li>
+              <p class="label">Monthly sales volume</p>
+              <div class="num idle" id="w-d-vol">—</div>
+              <p class="foot-note" id="w-d-vol-note"></p>
+            </li>
+            <li>
+              <p class="label">Profit per sale</p>
+              <div class="num idle" id="w-d-pps">—</div>
+              <p class="foot-note" id="w-d-pps-note"></p>
+            </li>
+            <li>
+              <p class="label">Profit margin</p>
+              <div class="num idle" id="w-d-margin">—</div>
+              <p class="foot-note" id="w-d-margin-note"></p>
+            </li>
+            <li>
+              <p class="label">Monthly revenue</p>
+              <div class="num idle" id="w-d-rev">—</div>
+              <p class="foot-note" id="w-d-rev-note"></p>
+            </li>
+            <li>
+              <p class="label">Monthly product-level profit</p>
+              <div class="num idle" id="w-d-profit">—</div>
+              <p class="foot-note" id="w-d-profit-note"></p>
+            </li>
+          </ul>
+        </div>
+
+        <p class="verdict" id="w-verdict">Fill in both scenarios, then press <strong>Compare scenarios</strong>.</p>
+
+        <p class="disclaimer">Scenario results are estimates based only on the numbers entered. Actual sales volume, expenses, taxes, refunds, customer behavior, and other factors may change actual profit.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 5. MONTHLY PROFIT GOAL ============ -->
+  <section class="panel" id="panel-goal" role="tabpanel" aria-labelledby="tab-goal" hidden>
+    <div class="rig">
+      <div class="card">
+        <p class="card-title">Your goal</p>
+        <p class="card-note">Enter the monthly product-level profit you want, your selling price, and your cost per sale. REVORAQ turns the goal into a sales target.</p>
+        <div class="field">
+          <label for="g-goal">Desired monthly profit</label>
+          <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="g-goal" min="0" step="0.01" placeholder="5000.00" inputmode="decimal"></div>
+          <p class="field-error" id="g-goal-err" role="alert"></p>
+        </div>
+        <div class="pair">
+          <div class="field">
+            <label for="g-price">Selling price per sale</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="g-price" min="0" step="0.01" placeholder="100.00" inputmode="decimal"></div>
+            <p class="field-error" id="g-price-err" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="g-cost">Cost per sale</label>
+            <div class="input-wrap"><span class="affix cur-symbol">$</span><input type="number" id="g-cost" min="0" step="0.01" placeholder="60.00" inputmode="decimal"></div>
+            <p class="field-error" id="g-cost-err" role="alert"></p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-reset" type="button" data-reset="goal">Reset</button>
+          <button class="btn btn-go" type="button" data-calc="goal">Calculate goal</button>
+        </div>
+      </div>
+      <div class="card readout">
+        <p class="card-title">Result</p>
+        <div class="headline">
+          <p class="label">Sales needed per month</p>
+          <div class="value is-idle" id="g-out-sales">—</div>
+        </div>
+        <ul class="stats">
+          <li><p class="label">Profit per sale</p><div class="num idle" id="g-out-pps">—</div></li>
+          <li><p class="label">Revenue needed per month</p><div class="num idle" id="g-out-revenue">—</div></li>
+          <li><p class="label">Roughly per week</p><div class="num idle" id="g-out-week">—</div></li>
+          <li><p class="label">Roughly per day</p><div class="num idle" id="g-out-day">—</div></li>
+        </ul>
+        <p class="verdict" id="g-verdict">Enter your goal, price, and cost, then press <strong>Calculate goal</strong>.</p>
+        <p class="disclaimer">This is a planning estimate based only on the numbers entered and is before taxes, fixed expenses, refunds, and other costs not included above.</p>
+      </div>
+    </div>
+  </section>
+
+  </section>
+  <!-- ============ END CALCULATORS ============ -->
+
+  <!-- ============ USER / FEEDBACK ============ -->
+  <section class="beta" aria-labelledby="beta-title">
+    <div class="beta-text">
+      <h3 id="beta-title">Help us make REVORAQ even better.</h3>
+      <p>We're improving the platform based on real user feedback.</p>
+    </div>
+
+    <button class="btn-feedback"
+            type="button"
+            id="feedback-toggle"
+            aria-expanded="false"
+            aria-controls="feedback-form-panel">Send Feedback</button>
+
+  </section>
+
+  <!-- ============ FEEDBACK FORM (Netlify Forms) ============ -->
+  <section class="feedback" id="feedback-form-panel" aria-labelledby="feedback-title" hidden>
+    <h3 id="feedback-title" tabindex="-1">Help Improve REVORAQ</h3>
+    <p class="intro">Four short questions. Your answers go straight to the person building this — they're read, not counted.</p>
+
+    <form name="revoraq-beta-feedback"
+          method="POST"
+          action="/index.html?feedback=received#feedback-success"
+          data-netlify="true"
+          netlify-honeypot="bot-field">
+
+      <!-- Required by Netlify Forms so the submission is attributed correctly -->
+      <input type="hidden" name="form-name" value="revoraq-beta-feedback">
+
+      <!-- Honeypot: hidden from people, tempting to bots. Netlify discards anything that fills it. -->
+      <p class="hp" aria-hidden="true">
+        <label>Leave this field empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+      </p>
+
+      <fieldset class="fb-q">
+        <legend>How useful was REVORAQ? <span class="small">— required</span></legend>
+        <div class="scale">
+          <label><input type="radio" name="usefulness" value="1 — Not useful" required><span>1<br>Not useful</span></label>
+          <label><input type="radio" name="usefulness" value="2" required><span>2</span></label>
+          <label><input type="radio" name="usefulness" value="3" required><span>3</span></label>
+          <label><input type="radio" name="usefulness" value="4" required><span>4</span></label>
+          <label><input type="radio" name="usefulness" value="5 — Very useful" required><span>5<br>Very useful</span></label>
+        </div>
+      </fieldset>
+
+      <div class="fb-q">
+        <label for="fb-used">What did you use REVORAQ to calculate?</label>
+        <textarea id="fb-used" name="what-calculated" rows="3"></textarea>
+      </div>
+
+      <div class="fb-q">
+        <label for="fb-confusing">Was anything confusing or difficult?</label>
+        <textarea id="fb-confusing" name="confusing" rows="3"></textarea>
+      </div>
+
+      <div class="fb-q">
+        <label for="fb-next">What would you like REVORAQ to do next?</label>
+        <textarea id="fb-next" name="what-next" rows="3"></textarea>
+      </div>
+
+      <div class="fb-q">
+        <label for="fb-email">Email address <span class="small">(optional)</span></label>
+        <input type="email" id="fb-email" name="email" autocomplete="email" aria-describedby="fb-email-note">
+        <p class="fb-privacy" id="fb-email-note">Only enter your email if you're willing to be contacted about your feedback.</p>
+      </div>
+
+      <div class="fb-actions">
+        <button class="btn btn-submit" type="submit">Submit Feedback</button>
+        <p class="fb-privacy">This form is the only part of REVORAQ that sends anything anywhere. Your calculator entries are never included.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- Shown only after Netlify redirects back following a real submission -->
+  <section class="fb-success" id="feedback-success" aria-labelledby="feedback-success-title" hidden>
+    <h3 id="feedback-success-title" tabindex="-1">Thanks — your feedback came through.</h3>
+    <p>It's been recorded and will be read. REVORAQ is continuing to improve, so notes like yours shape what gets built next.</p>
+  </section>
+
+  <p class="foot">
+    <strong>How to read this.</strong> Profit margin is profit as a share of your price. Markup is profit as a share of your cost — the same sale always shows a bigger markup than margin, so never quote one and price off the other. Break-even units are rounded up, because you can't sell a partial unit.
+    REVORAQ calculations run entirely in your browser and are not sent or saved. Information entered into the optional feedback form is submitted only when you choose to send it.
+  </p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Currency ---------- */
+
+  var currency = "$";
+  var curSelect = document.getElementById("cur");
+
+  function applyCurrency(){
+    currency = curSelect.value;
+    var marks = document.querySelectorAll(".cur-symbol");
+    for (var i = 0; i < marks.length; i++) marks[i].textContent = currency;
+  }
+
+  curSelect.addEventListener("change", function(){
+    applyCurrency();
+    resetAll();
+  });
+
+  /* ---------- Formatting ---------- */
+
+  function money(n){
+    var neg = n < 0;
+    var abs = Math.abs(n);
+    var parts = abs.toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (neg ? "-" : "") + currency + parts[0] + "." + parts[1];
+  }
+
+  function pct(n){
+    return n.toFixed(2) + "%";
+  }
+
+  function units(n){
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  /* ---------- Reading + validating a field ---------- */
+
+  function el(id){ return document.getElementById(id); }
+
+  function setError(id, message){
+    var input = el(id);
+    var box = input.closest(".input-wrap");
+    el(id + "-err").textContent = message || "";
+    if (message){
+      box.classList.add("invalid");
+      input.setAttribute("aria-invalid", "true");
+    } else {
+      box.classList.remove("invalid");
+      input.removeAttribute("aria-invalid");
+    }
+  }
+
+  /*
+     opts.label     name shown in error messages
+     opts.required  blank is not allowed
+     opts.max       upper bound (exclusive)
+     opts.maxMsg    message when the upper bound is broken
+     Returns a number, or null if the field is invalid.
+  */
+  function readField(id, opts){
+    opts = opts || {};
+    var raw = el(id).value.trim();
+
+    if (raw === ""){
+      if (opts.required){
+        setError(id, "Enter a number for " + opts.label.toLowerCase() + ".");
+        return null;
+      }
+      setError(id, "");
+      return 0;
+    }
+
+    var value = Number(raw);
+
+    if (!isFinite(value)){
+      setError(id, "Use digits only — no letters or symbols.");
+      return null;
+    }
+    if (value < 0){
+      setError(id, opts.label + " can't be negative.");
+      return null;
+    }
+    if (typeof opts.max === "number" && value >= opts.max){
+      setError(id, opts.maxMsg || (opts.label + " must be less than " + opts.max + "."));
+      return null;
+    }
+
+    setError(id, "");
+    return value;
+  }
+
+  function clearErrors(ids){
+    for (var i = 0; i < ids.length; i++) setError(ids[i], "");
+  }
+
+  function focusFirstError(ids){
+    for (var i = 0; i < ids.length; i++){
+      if (el(ids[i] + "-err").textContent){ el(ids[i]).focus(); return; }
+    }
+  }
+
+  function setNum(id, text, idle){
+    var node = el(id);
+    node.textContent = text;
+    if (idle) node.classList.add("idle"); else node.classList.remove("idle");
+  }
+
+  function setHeadline(id, text, state){
+    var node = el(id);
+    node.textContent = text;
+    node.className = "value " + (state === "gain" ? "is-gain" : state === "loss" ? "is-loss" : "is-idle");
+  }
+
+  function setVerdict(id, html, warn){
+    var node = el(id);
+    node.innerHTML = html;
+    node.className = warn ? "verdict warn" : "verdict";
+  }
+
+  /* ============================================================
+     1. PROFIT CALCULATOR
+     ============================================================ */
+
+  var profitIds = ["p-price","p-product","p-labor","p-ads","p-fees","p-other"];
+
+  function calcProfit(){
+    var price   = readField("p-price",   { label:"Selling price", required:true });
+    var product = readField("p-product", { label:"Product or material cost" });
+    var labor   = readField("p-labor",   { label:"Labor cost" });
+    var ads     = readField("p-ads",     { label:"Advertising cost" });
+    var fees    = readField("p-fees",    { label:"Platform or transaction fees" });
+    var other   = readField("p-other",   { label:"Other costs" });
+
+    if (price === null || product === null || labor === null ||
+        ads === null || fees === null || other === null){
+      focusFirstError(profitIds);
+      return;
+    }
+
+    var totalCost = product + labor + ads + fees + other;
+    var profit    = price - totalCost;
+
+    setHeadline("p-out-profit", money(profit), profit > 0 ? "gain" : profit < 0 ? "loss" : "idle");
+    setNum("p-out-cost", money(totalCost), false);
+
+    // Margin needs a price above zero; markup needs a cost above zero.
+    var margin = null, markup = null, costShare = null;
+
+    if (price > 0){
+      margin = (profit / price) * 100;
+      costShare = (totalCost / price) * 100;
+      setNum("p-out-margin", pct(margin), false);
+      setNum("p-out-costpct", pct(costShare), false);
+    } else {
+      setNum("p-out-margin", "—", true);
+      setNum("p-out-costpct", "—", true);
+    }
+
+    if (totalCost > 0){
+      markup = (profit / totalCost) * 100;
+      setNum("p-out-markup", pct(markup), false);
+    } else {
+      setNum("p-out-markup", "—", true);
+    }
+
+    drawBand(margin);
+
+    // Plain-language read on the result.
+    if (price === 0){
+      setVerdict("p-verdict", "A price of " + money(0) + " means every sale costs you <strong>" + money(totalCost) + "</strong>. Margin and markup need a price above zero.", true);
+    } else if (profit < 0){
+      setVerdict("p-verdict", "You lose <strong>" + money(Math.abs(profit)) + "</strong> on every sale. To break even you'd need to charge at least <strong>" + money(totalCost) + "</strong>.", true);
+    } else if (profit === 0){
+      setVerdict("p-verdict", "This price exactly covers your costs. Anything unexpected turns it into a loss.", true);
+    } else if (margin !== null && margin < 20){
+      setVerdict("p-verdict", "You have <strong>" + money(profit) + "</strong> remaining from every " + money(price) + " sale after the costs entered above — a profit margin of <strong>" + pct(margin) + "</strong>. At margins under 20%, a refund or a fee increase absorbs a large share of that amount — whether that's workable depends on your industry and volume.", true);
+    } else {
+      setVerdict("p-verdict", "You have <strong>" + money(profit) + "</strong> remaining from every " + money(price) + " sale after the costs entered above — a profit margin of <strong>" + pct(margin) + "</strong>. At this rate, 100 sales would produce about <strong>" + money(profit * 100) + "</strong> in estimated product-level profit, before fixed expenses, taxes, refunds, and any costs not entered above.", false);
+    }
+  }
+
+  /* The band has four equal zones: loss, 0–20%, 20–40%, 40%+.
+     The needle is placed inside whichever zone the margin lands in. */
+  function drawBand(margin){
+    var band   = el("p-band");
+    var needle = el("p-needle");
+    var label  = el("p-band-label");
+
+    if (margin === null){
+      band.classList.add("idle");
+      needle.hidden = true;
+      label.textContent = "Not available";
+      return;
+    }
+
+    band.classList.remove("idle");
+    needle.hidden = false;
+
+    var pos, name;
+    if (margin < 0){
+      pos = 25 * (1 - Math.min(Math.abs(margin), 60) / 60);
+      name = "Loss";
+    } else if (margin < 20){
+      pos = 25 + (margin / 20) * 25;
+      name = "Under 20%";
+    } else if (margin < 40){
+      pos = 50 + ((margin - 20) / 20) * 25;
+      name = "20–40%";
+    } else {
+      pos = 75 + Math.min((margin - 40) / 40, 1) * 25;
+      name = "40%+";
+    }
+
+    needle.style.left = Math.max(1, Math.min(99, pos)) + "%";
+    label.textContent = name + " · " + pct(margin);
+  }
+
+  function resetProfit(){
+    for (var i = 0; i < profitIds.length; i++) el(profitIds[i]).value = "";
+    clearErrors(profitIds);
+    setHeadline("p-out-profit", "—", "idle");
+    setNum("p-out-cost", "—", true);
+    setNum("p-out-margin", "—", true);
+    setNum("p-out-markup", "—", true);
+    setNum("p-out-costpct", "—", true);
+    el("p-band").classList.add("idle");
+    el("p-needle").hidden = true;
+    el("p-band-label").textContent = "Awaiting numbers";
+    setVerdict("p-verdict", "Fill in the boxes on the left, then press <strong>Calculate profit</strong>.", false);
+  }
+
+  /* ============================================================
+     2. TARGET PROFIT CALCULATOR
+     Required price = total cost / (1 - margin/100)
+     ============================================================ */
+
+  var targetIds = ["t-cost","t-margin"];
+
+  function calcTarget(){
+    var cost = readField("t-cost", { label:"Total cost per sale", required:true });
+    var margin = readField("t-margin", {
+      label: "Desired profit margin",
+      required: true,
+      max: 100,
+      maxMsg: "A margin of 100% or more is impossible — the price would never cover the cost. Try 90% or less."
+    });
+
+    if (cost === null || margin === null){
+      focusFirstError(targetIds);
+      return;
+    }
+
+    // Guarded by the max check above, so the divisor can never be zero.
+    var divisor = 1 - (margin / 100);
+    if (divisor <= 0){
+      setError("t-margin", "A margin of 100% or more is impossible. Try 90% or less.");
+      el("t-margin").focus();
+      return;
+    }
+
+    var price  = cost / divisor;
+    var profit = price - cost;
+
+    setHeadline("t-out-price", money(price), "gain");
+    setNum("t-out-profit", money(profit), false);
+
+    if (cost > 0){
+      setNum("t-out-markup", pct((profit / cost) * 100), false);
+    } else {
+      setNum("t-out-markup", "—", true);
+    }
+
+    drawStack(cost, profit, price, margin);
+
+    if (cost === 0){
+      setVerdict("t-verdict", "With no cost entered, any price is pure profit. Add your real cost per sale for a usable number.", true);
+    } else if (margin >= 90){
+      setVerdict("t-verdict", "To keep <strong>" + pct(margin) + "</strong> you'd have to charge <strong>" + money(price) + "</strong> on a " + money(cost) + " cost. Check that buyers will pay it before you commit.", true);
+    } else {
+      setVerdict("t-verdict", "Charge <strong>" + money(price) + "</strong> to keep <strong>" + money(profit) + "</strong> per sale. Round up to " + money(Math.ceil(price)) + " if you want a cleaner price tag.", false);
+    }
+  }
+
+  function drawStack(cost, profit, price, margin){
+    var stack = el("t-stack");
+    var segCost = el("t-seg-cost");
+    var segProfit = el("t-seg-profit");
+    var label = el("t-stack-label");
+
+    if (price <= 0){
+      stack.classList.add("idle");
+      segCost.style.width = "";
+      segProfit.style.width = "";
+      label.textContent = "Not available";
+      return;
+    }
+
+    stack.classList.remove("idle");
+    var costPct = (cost / price) * 100;
+    segCost.style.width = costPct + "%";
+    segProfit.style.width = (100 - costPct) + "%";
+    segCost.textContent = costPct >= 18 ? "Cost " + costPct.toFixed(0) + "%" : "";
+    segProfit.textContent = (100 - costPct) >= 18 ? "Profit " + (100 - costPct).toFixed(0) + "%" : "";
+    label.textContent = pct(margin) + " kept";
+  }
+
+  function resetTarget(){
+    for (var i = 0; i < targetIds.length; i++) el(targetIds[i]).value = "";
+    clearErrors(targetIds);
+    setHeadline("t-out-price", "—", "idle");
+    setNum("t-out-profit", "—", true);
+    setNum("t-out-markup", "—", true);
+    var stack = el("t-stack");
+    stack.classList.add("idle");
+    el("t-seg-cost").style.width = "";
+    el("t-seg-profit").style.width = "";
+    el("t-seg-cost").textContent = "Cost";
+    el("t-seg-profit").textContent = "Profit";
+    el("t-stack-label").textContent = "Awaiting numbers";
+    setVerdict("t-verdict", "Enter your cost and the margin you want, then press <strong>Calculate price</strong>.", false);
+  }
+
+  /* ============================================================
+     3. BREAK-EVEN CALCULATOR
+     ============================================================ */
+
+  var beIds = ["b-fixed","b-price","b-var"];
+
+  function calcBreakeven(){
+    var fixed = readField("b-fixed", { label:"Monthly fixed expenses", required:true });
+    var price = readField("b-price", { label:"Selling price per unit", required:true });
+    var varc  = readField("b-var",   { label:"Variable cost per unit", required:true });
+
+    if (fixed === null || price === null || varc === null){
+      focusFirstError(beIds);
+      return;
+    }
+
+    var cm = price - varc;
+
+    setNum("b-out-cm", money(cm), false);
+
+    // No contribution margin means no number of units will ever cover fixed costs.
+    if (cm <= 0){
+      setHeadline("b-out-units", "Never", "loss");
+      setNum("b-out-cmr", price > 0 ? pct((cm / price) * 100) : "—", price > 0 ? false : true);
+      setNum("b-out-rev", "—", true);
+      setNum("b-out-week", "—", true);
+
+      if (price === 0){
+        setVerdict("b-verdict", "At a price of " + money(0) + " every unit adds " + money(varc) + " to your losses. Set a price above your variable cost.", true);
+      } else if (cm === 0){
+        setVerdict("b-verdict", "Each unit covers its own cost exactly and contributes <strong>nothing</strong> toward your " + money(fixed) + " of fixed expenses. Raise the price or cut the variable cost.", true);
+      } else {
+        setVerdict("b-verdict", "You lose <strong>" + money(Math.abs(cm)) + "</strong> on every unit, so selling more makes things worse. Your price must exceed your variable cost of " + money(varc) + ".", true);
+      }
+      return;
+    }
+
+    var beUnits = Math.ceil(fixed / cm);   // always round up — no partial units
+    var beRev   = beUnits * price;
+    var perWeek = Math.ceil(beUnits / 4.345);
+
+    setHeadline("b-out-units", units(beUnits) + (beUnits === 1 ? " unit" : " units"), "gain");
+    setNum("b-out-cmr", price > 0 ? pct((cm / price) * 100) : "—", price > 0 ? false : true);
+    setNum("b-out-rev", money(beRev), false);
+    setNum("b-out-week", units(perWeek) + (perWeek === 1 ? " unit" : " units"), false);
+
+    if (fixed === 0){
+      setVerdict("b-verdict", "With no fixed expenses entered, your break-even point is <strong>0 units</strong>. Every sale priced above its variable cost contributes <strong>" + money(cm) + "</strong> toward profit, starting with the first one.", false);
+    } else {
+      setVerdict("b-verdict", "Sell <strong>" + units(beUnits) + "</strong> units a month (<strong>" + money(beRev) + "</strong>) to cover your " + money(fixed) + " in fixed costs. Every additional unit contributes " + money(cm) + " before taxes and other expenses not included above.", false);
+    }
+  }
+
+  function resetBreakeven(){
+    for (var i = 0; i < beIds.length; i++) el(beIds[i]).value = "";
+    clearErrors(beIds);
+    setHeadline("b-out-units", "—", "idle");
+    setNum("b-out-cm", "—", true);
+    setNum("b-out-cmr", "—", true);
+    setNum("b-out-rev", "—", true);
+    setNum("b-out-week", "—", true);
+    setVerdict("b-verdict", "Enter your three numbers, then press <strong>Calculate break-even</strong>.", false);
+  }
+
+  /* ============================================================
+     4. WHAT-IF SIMULATOR
+     ============================================================ */
+
+  var wIds = ["w-cprice","w-ccost","w-cvol","w-pprice","w-pcost","w-pvol"];
+
+  function signedMoney(n){
+    return (n > 0 ? "+" : "") + money(n);
+  }
+
+  function signedUnits(n){
+    return (n > 0 ? "+" : n < 0 ? "-" : "") + units(Math.abs(n));
+  }
+
+  /* Percentage points, not percent — used only for the margin comparison. */
+  function signedPoints(n){
+    return (n > 0 ? "+" : "") + n.toFixed(2) + " pp";
+  }
+
+  /* Percent change against a starting value.
+     Returns null when the base is zero or negative, where a percent
+     change would be meaningless or misleading. */
+  function percentChange(from, to){
+    if (!(from > 0)) return null;
+    return ((to - from) / from) * 100;
+  }
+
+  function changeNote(from, to, noun){
+    var chg = percentChange(from, to);
+    if (chg === null) return "No percentage change from a starting value of " + (noun === "money" ? money(from) : units(from)) + ".";
+    return (chg > 0 ? "+" : "") + chg.toFixed(2) + "% change";
+  }
+
+  function setDelta(id, text, value, note){
+    var node = el(id);
+    node.textContent = text;
+    node.className = "num " + (value > 0 ? "up" : value < 0 ? "down" : "");
+    el(id + "-note").textContent = note || "";
+  }
+
+  function scenario(price, cost, volume){
+    var s = {
+      price: price,
+      cost: cost,
+      volume: volume,
+      profitPerSale: price - cost,
+      revenue: price * volume
+    };
+    s.monthlyProfit = s.profitPerSale * volume;
+    // Margin is undefined without a price above zero.
+    s.margin = price > 0 ? (s.profitPerSale / price) * 100 : null;
+    return s;
+  }
+
+  function calcWhatIf(){
+    var cPrice = readField("w-cprice", { label:"Current selling price", required:true });
+    var cCost  = readField("w-ccost",  { label:"Current cost per sale", required:true });
+    var cVol   = readField("w-cvol",   { label:"Current monthly sales volume", required:true });
+    var pPrice = readField("w-pprice", { label:"Proposed selling price", required:true });
+    var pCost  = readField("w-pcost",  { label:"Proposed cost per sale", required:true });
+    var pVol   = readField("w-pvol",   { label:"Expected monthly sales volume", required:true });
+
+    if (cPrice === null || cCost === null || cVol === null ||
+        pPrice === null || pCost === null || pVol === null){
+      focusFirstError(wIds);
+      return;
+    }
+
+    // Sales volume is counted in whole units.
+    cVol = Math.round(cVol);
+    pVol = Math.round(pVol);
+
+    var c = scenario(cPrice, cCost, cVol);
+    var p = scenario(pPrice, pCost, pVol);
+
+    // --- side by side ---
+    setCell("w-c-pps", money(c.profitPerSale), false);
+    setCell("w-p-pps", money(p.profitPerSale), true);
+    setCell("w-c-margin", c.margin === null ? "—" : pct(c.margin), false, c.margin === null);
+    setCell("w-p-margin", p.margin === null ? "—" : pct(p.margin), true, p.margin === null);
+    setCell("w-c-rev", money(c.revenue), false);
+    setCell("w-p-rev", money(p.revenue), true);
+    setCell("w-c-profit", money(c.monthlyProfit), false);
+    setCell("w-p-profit", money(p.monthlyProfit), true);
+
+    // --- changes ---
+    var dPrice  = p.price - c.price;
+    var dVol    = p.volume - c.volume;
+    var dPps    = p.profitPerSale - c.profitPerSale;
+    var dRev    = p.revenue - c.revenue;
+    var dProfit = p.monthlyProfit - c.monthlyProfit;
+
+    setDelta("w-d-price", signedMoney(dPrice), dPrice, changeNote(c.price, p.price, "money"));
+    setDelta("w-d-vol", signedUnits(dVol) + (Math.abs(dVol) === 1 ? " unit" : " units"), dVol, changeNote(c.volume, p.volume, "units"));
+    setDelta("w-d-pps", signedMoney(dPps), dPps, changeNote(c.profitPerSale, p.profitPerSale, "money"));
+
+    if (c.margin === null || p.margin === null){
+      setDelta("w-d-margin", "—", 0, "Needs a selling price above " + money(0) + " in both scenarios.");
+    } else {
+      var dMargin = p.margin - c.margin;
+      setDelta("w-d-margin", signedPoints(dMargin), dMargin,
+        "Percentage points, not percent: the margin moves from " + pct(c.margin) + " to " + pct(p.margin) + ".");
+    }
+
+    setDelta("w-d-rev", signedMoney(dRev), dRev, changeNote(c.revenue, p.revenue, "money"));
+    setDelta("w-d-profit", signedMoney(dProfit), dProfit, changeNote(c.monthlyProfit, p.monthlyProfit, "money"));
+
+    setVerdict("w-verdict", buildScenarioSummary(c, p, dProfit), dProfit < 0);
+  }
+
+  function setCell(id, text, proposed, idle){
+    var node = el(id);
+    node.textContent = text;
+    node.className = "cell" + (idle ? " idle" : proposed ? " proposed" : "");
+  }
+
+  /* Plain-English read on the comparison. */
+  function buildScenarioSummary(c, p, dProfit){
+    var priceMove =
+      p.price > c.price ? "increasing the selling price from " + money(c.price) + " to " + money(p.price) :
+      p.price < c.price ? "reducing the selling price from " + money(c.price) + " to " + money(p.price) :
+      "holding the selling price at " + money(c.price);
+
+    var volMove =
+      p.volume > c.volume ? "expected monthly sales rise from " + units(c.volume) + " to " + units(p.volume) + " units" :
+      p.volume < c.volume ? "expected monthly sales fall from " + units(c.volume) + " to " + units(p.volume) + " units" :
+      "monthly sales stay at " + units(c.volume) + " units";
+
+    var costMove = p.cost !== c.cost
+      ? ", with cost per sale moving from " + money(c.cost) + " to " + money(p.cost)
+      : "";
+
+    var volChanged = p.volume !== c.volume;
+    var profitUp = dProfit > 0;
+    var profitDown = dProfit < 0;
+
+    // Lead with "Even though" only when the volume move runs against the outcome.
+    var conflict = volChanged && ((p.volume < c.volume && profitUp) || (p.volume > c.volume && profitDown));
+
+    var lead = conflict
+      ? "Even though " + volMove + ", "
+      : volChanged ? "With " + volMove + ", " : "With " + volMove + ", ";
+
+    var outcome;
+    if (profitUp){
+      outcome = priceMove + costMove + " would increase estimated monthly product-level profit from <strong>" +
+        money(c.monthlyProfit) + "</strong> to <strong>" + money(p.monthlyProfit) +
+        "</strong>, an increase of <strong>" + money(dProfit) + "</strong>";
+    } else if (profitDown){
+      outcome = priceMove + costMove + " would decrease estimated monthly product-level profit from <strong>" +
+        money(c.monthlyProfit) + "</strong> to <strong>" + money(p.monthlyProfit) +
+        "</strong>, a decrease of <strong>" + money(Math.abs(dProfit)) + "</strong>";
+    } else {
+      outcome = priceMove + costMove + " would leave estimated monthly product-level profit unchanged at <strong>" +
+        money(c.monthlyProfit) + "</strong>";
+    }
+
+    var sentence = lead + outcome + ", assuming the entered costs and sales estimates are accurate.";
+
+    // Flag a proposed scenario that loses money on every unit.
+    if (p.profitPerSale < 0){
+      sentence += " Note that at the proposed price, each sale loses " + money(Math.abs(p.profitPerSale)) +
+        ", so higher volume increases the loss.";
+    }
+
+    return sentence;
+  }
+
+  function resetWhatIf(){
+    for (var i = 0; i < wIds.length; i++) el(wIds[i]).value = "";
+    clearErrors(wIds);
+
+    var cells = ["w-c-pps","w-p-pps","w-c-margin","w-p-margin","w-c-rev","w-p-rev","w-c-profit","w-p-profit"];
+    for (var j = 0; j < cells.length; j++) setCell(cells[j], "—", false, true);
+
+    var deltas = ["w-d-price","w-d-vol","w-d-pps","w-d-margin","w-d-rev","w-d-profit"];
+    for (var k = 0; k < deltas.length; k++){
+      var node = el(deltas[k]);
+      node.textContent = "—";
+      node.className = "num idle";
+      el(deltas[k] + "-note").textContent = "";
+    }
+
+    setVerdict("w-verdict", "Fill in both scenarios, then press <strong>Compare scenarios</strong>.", false);
+  }
+
+  /* ============================================================
+     5. MONTHLY PROFIT GOAL
+     ============================================================ */
+
+  var goalIds = ["g-goal","g-price","g-cost"];
+
+  function calcGoal(){
+    var goal = readField("g-goal", { label:"Desired monthly profit", required:true });
+    var price = readField("g-price", { label:"Selling price per sale", required:true });
+    var cost = readField("g-cost", { label:"Cost per sale", required:true });
+    if (goal === null || price === null || cost === null){ focusFirstError(goalIds); return; }
+    if (goal <= 0){ setError("g-goal", "Desired monthly profit must be greater than zero."); focusFirstError(goalIds); return; }
+    if (price <= 0){ setError("g-price", "Selling price must be greater than zero."); focusFirstError(goalIds); return; }
+    if (cost >= price){ setError("g-cost", "Cost per sale must be lower than the selling price to produce a profit."); focusFirstError(goalIds); return; }
+    var pps = price - cost;
+    var sales = Math.ceil(goal / pps);
+    var revenue = sales * price;
+    var week = sales / 4.345;
+    var day = sales / 30.44;
+    setHeadline("g-out-sales", sales.toLocaleString(), "gain");
+    setNum("g-out-pps", money(pps), false);
+    setNum("g-out-revenue", money(revenue), false);
+    setNum("g-out-week", week.toFixed(1) + " sales", false);
+    setNum("g-out-day", day.toFixed(1) + " sales", false);
+    setVerdict("g-verdict", "To earn approximately <strong>" + money(goal) + "</strong> in monthly product-level profit, you would need about <strong>" + sales.toLocaleString() + " sales per month</strong> at a selling price of <strong>" + money(price) + "</strong>, assuming your cost remains <strong>" + money(cost) + " per sale</strong>. That's about <strong>" + week.toFixed(1) + " sales per week</strong> or <strong>" + day.toFixed(1) + " per day</strong>.", false);
+  }
+
+  function resetGoal(){
+    goalIds.forEach(function(id){ el(id).value = ""; setError(id, ""); });
+    setHeadline("g-out-sales", "—", "idle");
+    ["g-out-pps","g-out-revenue","g-out-week","g-out-day"].forEach(function(id){ setNum(id, "—", true); });
+    setVerdict("g-verdict", "Enter your goal, price, and cost, then press <strong>Calculate goal</strong>.", false);
+  }
+
+  /* ============================================================
+     Wiring
+     ============================================================ */
+
+  var calculators = { profit: calcProfit, target: calcTarget, breakeven: calcBreakeven, whatif: calcWhatIf, goal: calcGoal };
+  var resetters   = { profit: resetProfit, target: resetTarget, breakeven: resetBreakeven, whatif: resetWhatIf, goal: resetGoal };
+
+  document.addEventListener("click", function(e){
+    var go = e.target.closest("[data-calc]");
+    if (go){ calculators[go.getAttribute("data-calc")](); return; }
+
+    var rs = e.target.closest("[data-reset]");
+    if (rs){
+      var key = rs.getAttribute("data-reset");
+      resetters[key]();
+      var panel = rs.closest(".panel");
+      var first = panel.querySelector("input");
+      if (first) first.focus();
+    }
+  });
+
+  function resetAll(){ resetProfit(); resetTarget(); resetBreakeven(); resetWhatIf(); resetGoal(); }
+
+  // Enter key runs the calculator in the panel you're typing in.
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "Enter") return;
+    if (!e.target.matches("input[type=number]")) return;
+    e.preventDefault();
+    var panel = e.target.closest(".panel");
+    var btn = panel.querySelector("[data-calc]");
+    if (btn) calculators[btn.getAttribute("data-calc")]();
+  });
+
+  // Clear a field's error as soon as the person starts fixing it.
+  document.addEventListener("input", function(e){
+    if (!e.target.matches("input[type=number]")) return;
+    if (el(e.target.id + "-err")) setError(e.target.id, "");
+  });
+
+  /* Tabs */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var tabList = document.querySelector(".tabs");
+  var tabViewport = document.querySelector(".tabs-viewport");
+
+  function updateTabCues(){
+    var maxScroll = tabList.scrollWidth - tabList.clientWidth;
+    tabViewport.classList.toggle("has-left-cue", tabList.scrollLeft > 2);
+    tabViewport.classList.toggle("has-right-cue", maxScroll - tabList.scrollLeft > 2);
+  }
+
+  function revealTab(tab){
+    var listRect = tabList.getBoundingClientRect();
+    var tabRect = tab.getBoundingClientRect();
+
+    if (tabRect.left < listRect.left || tabRect.right > listRect.right){
+      tabList.scrollTo({
+        left:tabList.scrollLeft + tabRect.left - listRect.left - (tabList.clientWidth - tabRect.width) / 2,
+        behavior:reducedMotion() ? "auto" : "smooth"
+      });
+    }
+  }
+
+  function selectTab(tab){
+    tabs.forEach(function(t){
+      var on = t === tab;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+    });
+    revealTab(tab);
+  }
+
+  tabs.forEach(function(tab, i){
+    tab.addEventListener("click", function(){ selectTab(tab); });
+    tab.addEventListener("keydown", function(e){
+      var next = null;
+      if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+      if (e.key === "ArrowLeft")  next = tabs[(i - 1 + tabs.length) % tabs.length];
+      if (next){ e.preventDefault(); selectTab(next); next.focus(); }
+    });
+  });
+
+  tabList.addEventListener("scroll", updateTabCues, { passive:true });
+  window.addEventListener("resize", updateTabCues);
+  updateTabCues();
+
+  /* ============================================================
+     Feedback form: reveal, focus, and post-submission confirmation
+     ============================================================ */
+
+  var fbToggle = document.getElementById("feedback-toggle");
+  var fbPanel  = document.getElementById("feedback-form-panel");
+  var fbTitle  = document.getElementById("feedback-title");
+
+  function reducedMotion(){
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function openFeedback(){
+    fbPanel.hidden = false;
+    fbToggle.setAttribute("aria-expanded", "true");
+    fbToggle.textContent = "Hide feedback form";
+
+    if (fbPanel.scrollIntoView){
+      fbPanel.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+    }
+    // Keyboard focus moves to the form heading.
+    fbTitle.focus({ preventScroll:true });
+  }
+
+  function closeFeedback(){
+    fbPanel.hidden = true;
+    fbToggle.setAttribute("aria-expanded", "false");
+    fbToggle.textContent = "Send Feedback";
+    fbToggle.focus();
+  }
+
+  fbToggle.addEventListener("click", function(){
+    if (fbPanel.hidden) openFeedback(); else closeFeedback();
+  });
+
+  /* The confirmation below appears only when Netlify redirects back to
+     /index.html?feedback=received#feedback-success after actually accepting a submission. Nothing
+     here simulates a successful send. */
+  if (window.location.search.indexOf("feedback=received") !== -1){
+    var fbSuccess = document.getElementById("feedback-success");
+    fbSuccess.hidden = false;
+    document.getElementById("feedback-success-title").focus({ preventScroll:true });
+    fbSuccess.scrollIntoView({ block:"center" });
+  }
+
+  applyCurrency();
+})();
+</script>
+</body>
+</html>
