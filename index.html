@@ -2173,6 +2173,7 @@ fieldset.fb-q{
   var goalIds = ["g-goal","g-price","g-cost"];
 
   function calcGoal(){
+    clearGoalResults();
     var goal = readField("g-goal", { label:"Desired monthly profit", required:true });
     var price = readField("g-price", { label:"Selling price per sale", required:true });
     var cost = readField("g-cost", { label:"Cost per sale", required:true });
@@ -2192,7 +2193,17 @@ fieldset.fb-q{
     setNum("g-out-day", day.toFixed(1) + " sales", false);
     setVerdict("g-verdict", "To earn approximately <strong>" + money(goal) + "</strong> in monthly product-level profit, you would need about <strong>" + sales.toLocaleString() + " sales per month</strong> at a selling price of <strong>" + money(price) + "</strong>, assuming your cost remains <strong>" + money(cost) + " per sale</strong>. That's about <strong>" + week.toFixed(1) + " sales per week</strong> or <strong>" + day.toFixed(1) + " per day</strong>.", false);
   }
-
+function clearGoalResults(){
+  setHeadline("g-out-sales", "—", "idle");
+  ["g-out-pps","g-out-revenue","g-out-week","g-out-day"].forEach(function(id){
+    setNum(id, "—", true);
+  });
+  setVerdict(
+    "g-verdict",
+    "Enter your goal, price, and cost, then press <strong>Calculate goal</strong>.",
+    false
+  );
+}
   function resetGoal(){
     goalIds.forEach(function(id){ el(id).value = ""; setError(id, ""); });
     setHeadline("g-out-sales", "—", "idle");
@@ -2220,7 +2231,11 @@ fieldset.fb-q{
       if (first) first.focus();
     }
   });
-
+goalIds.forEach(function(id){
+  el(id).addEventListener("input", function(){
+    clearGoalResults();
+  });
+});
   function resetAll(){ resetProfit(); resetTarget(); resetBreakeven(); resetWhatIf(); resetGoal(); }
 
   // Enter key runs the calculator in the panel you're typing in.
