@@ -1832,7 +1832,9 @@ fieldset.fb-q{
 
   var targetIds = ["t-cost","t-margin"];
 
-  function calcTarget(){
+ function calcTarget(){
+    clearTargetResults();
+
     var cost = readField("t-cost", { label:"Total cost per sale", required:true });
     var margin = readField("t-margin", {
       label: "Desired profit margin",
@@ -1899,7 +1901,26 @@ fieldset.fb-q{
     segProfit.textContent = (100 - costPct) >= 18 ? "Profit " + (100 - costPct).toFixed(0) + "%" : "";
     label.textContent = pct(margin) + " kept";
   }
+function clearTargetResults(){
+  clearErrors(targetIds);
+  setHeadline("t-out-price", "—", "idle");
+  setNum("t-out-profit", "—", true);
+  setNum("t-out-markup", "—", true);
 
+  var stack = el("t-stack");
+  stack.classList.add("idle");
+  el("t-seg-cost").style.width = "";
+  el("t-seg-profit").style.width = "";
+  el("t-seg-cost").textContent = "Cost";
+  el("t-seg-profit").textContent = "Profit";
+  el("t-stack-label").textContent = "Awaiting numbers";
+
+  setVerdict(
+    "t-verdict",
+    "Enter your cost and the margin you want, then press <strong>Calculate price</strong>.",
+    false
+  );
+}
   function resetTarget(){
     for (var i = 0; i < targetIds.length; i++) el(targetIds[i]).value = "";
     clearErrors(targetIds);
@@ -2234,6 +2255,11 @@ function clearGoalResults(){
 goalIds.forEach(function(id){
   el(id).addEventListener("input", function(){
     clearGoalResults();
+  });
+});
+  targetIds.forEach(function(id){
+  el(id).addEventListener("input", function(){
+    clearTargetResults();
   });
 });
   function resetAll(){ resetProfit(); resetTarget(); resetBreakeven(); resetWhatIf(); resetGoal(); }
