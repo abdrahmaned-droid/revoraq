@@ -1005,6 +1005,31 @@ fieldset.fb-q{
   #panel-whatif .pair{
   grid-template-columns:minmax(0,1fr)!important;
 }
+  .tabs-viewport{
+  display:block;
+  overflow-x:auto;
+}
+
+.tabs{
+  display:flex;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  width:100%;
+  max-width:100%;
+  justify-content:flex-start;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.tab{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
 
 #panel-whatif .field{
   min-width:0!important;
